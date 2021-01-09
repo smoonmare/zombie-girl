@@ -27,7 +27,7 @@ class Character(pygame.sprite.Sprite):
             if self.mode_num == self.max_walk:
                 self.mode_num = 0
             self.mode_num += 1
-        current_img = "Walk (" + str(self.mode_num) + ").png"
+        current_img = 'Walk (' + str(self.mode_num) + ').png'
 
         if velocity < 0:
             self.image = pygame.transform.flip(self.images[current_img], True, False)
@@ -37,11 +37,10 @@ class Character(pygame.sprite.Sprite):
         if self.rect.x + velocity >=0 and self.rect.x + 50 + velocity <= screen_width:
             self.rect.x += velocity
 
-
 class Girl(Character):
 
     def __init__(self):
-        self.path = "png/Girl/"
+        self.path = 'png/Girl/'
         Character.__init__(self)
         self.rect.x = 0
         self.rect.y = 0
@@ -49,7 +48,7 @@ class Girl(Character):
 class Zombie(Character):
 
     def __init__(self):
-        self.path = "png/Zombie/female/"
+        self.path = 'png/Zombie/female/'
         Character.__init__(self)
         self.rect.x = 100
         self.rect.y = 100
@@ -82,16 +81,31 @@ class Zombie(Character):
             self.rect.y = level_rects[collision][1] - 50 # subtracting the height of the image
             return False
 
-
-
-
 class Level(object):
-    coordinates = [[["Tile1.png", screen_width - 1200, screen_height - 50], ["Tile2.png", screen_width - 1150, screen_height - 50], ["Tile2.png", screen_width - 1100, screen_height - 50], ["Tile2.png", screen_width - 1050, screen_height - 50], ["Tile3.png", screen_width - 1000, screen_height - 50], \
-        ["Tile14.png", screen_width - 900, screen_height - 150], ["Tile15.png", screen_width - 850, screen_height - 150], ["Tile15.png", screen_width - 800, screen_height - 150], ["Tile15.png", screen_width - 750, screen_height - 150], ["Tile16.png", screen_width - 700, screen_height - 150], \
-            ["Tile14.png", screen_width - 700, screen_height - 250], ["Tile15.png", screen_width - 650, screen_height - 250], ["Tile15.png", screen_width - 600, screen_height - 250], ["Tile15.png", screen_width - 550, screen_height - 250], ["Tile15.png", screen_width - 500, screen_height - 250], ["Tile16.png", screen_width - 450, screen_height - 250], \
-                ["Tile14.png", screen_width - 350, screen_height - 300], ["Tile15.png", screen_width - 300, screen_height - 300], ["Tile15.png", screen_width - 250, screen_height - 300], ["Tile15.png", screen_width - 200, screen_height - 300], ["Tile15.png", screen_width - 150, screen_height - 300], ["Tile15.png", screen_width - 100, screen_height - 300], ["Tile16.png", screen_width - 50, screen_height - 300] \
-            ]]
-    
+    coordinates = [[['Tile1.png', screen_width - 1200, screen_height - 50],
+                    ['Tile2.png', screen_width - 1150, screen_height - 50],
+                    ["Tile2.png", screen_width - 1100, screen_height - 50],
+                    ["Tile2.png", screen_width - 1050, screen_height - 50],
+                    ["Tile3.png", screen_width - 1000, screen_height - 50], \
+                    ["Tile14.png", screen_width - 900, screen_height - 150],
+                    ["Tile15.png", screen_width - 850, screen_height - 150],
+                    ["Tile15.png", screen_width - 800, screen_height - 150],
+                    ["Tile15.png", screen_width - 750, screen_height - 150],
+                    ["Tile16.png", screen_width - 700, screen_height - 150], \
+                    ["Tile14.png", screen_width - 700, screen_height - 250],
+                    ["Tile15.png", screen_width - 650, screen_height - 250],
+                    ["Tile15.png", screen_width - 600, screen_height - 250],
+                    ["Tile15.png", screen_width - 550, screen_height - 250],
+                    ["Tile15.png", screen_width - 500, screen_height - 250],
+                    ["Tile16.png", screen_width - 450, screen_height - 250], \
+                    ["Tile14.png", screen_width - 350, screen_height - 300],
+                    ["Tile15.png", screen_width - 300, screen_height - 300],
+                    ["Tile15.png", screen_width - 250, screen_height - 300],
+                    ["Tile15.png", screen_width - 200, screen_height - 300],
+                    ["Tile15.png", screen_width - 150, screen_height - 300],
+                    ["Tile15.png", screen_width - 100, screen_height - 300],
+                    ["Tile16.png", screen_width - 50, screen_height - 300] \
+                        ]]
     limits = {screen_height - 50: (screen_width - 1200, screen_width - 1000), \
         screen_height - 150: (screen_width - 900, screen_width - 700), \
             screen_height - 250: (screen_width - 700, screen_width - 450), \
@@ -99,7 +113,7 @@ class Level(object):
 
     def __init__(self,id):
         self.id = id
-        path = "png/Tiles/"
+        path = 'png/Tiles/'
         all_images = os.listdir(path)
         self.img = {image: pygame.transform.scale(pygame.image.load(path + image).convert_alpha(), (50, 50)) for image in all_images}
 
@@ -131,11 +145,41 @@ class Level(object):
             level_rects.append(pygame.Rect(x1, item[0], length, 50))
         return level_rects
 
+class HUD(object):
 
+    def __init__(self):
+        self.score = 0
+        self.level = 1
+        self.message = 'Game on!'
+        self.lives = 9
+
+    def increment_level(self):
+        self.level += 1
+
+    def decrement_lives(self):
+        self.lives -= 1
+    
+    def update_message(self, message):
+        self.message = message
+
+    def display(self, display, message):
+        font_title = pygame.font.Font(None, 24)
+        lives = font_title.render('Lives: ' + str(self.lives), True, (255, 255, 255))
+        lives_rect = lives.get_rect(center=(int(screen_width / 5), 15))
+        display.blit(lives, lives_rect)
+
+        score = font_title.render('Score: ' + str(self.score), True, (255, 255, 255))
+        score_rect = score.get_rect(center=(int(screen_width * 0.8), 15))
+        display.blit(score, score_rect)
+
+        msg = font_title.render(message, True, (255, 255, 255))
+        msg_rect = msg.get_rect(center=(int(screen_width / 2), 15))
+        display.blit(msg, msg_rect)
 
 def main():
     walking = 1
     velocity = 0
+    message_current = 'Avoid the girl and get to the exit!'
     game_clock= pygame.time.Clock()
     screen_size = (screen_width, screen_height)
     screen = pygame.display.set_mode(screen_size, 0, 32)
@@ -147,6 +191,7 @@ def main():
     girl = Girl()
     char_list = pygame.sprite.Group()
     char_list.add(girl, zombie)
+    headsup = HUD()
 
     glocation = level.get_npc_starting_points()
     zlocation = level.get_pc_starting_points()
@@ -203,6 +248,7 @@ def main():
         screen.blit(pygame.transform.scale(background, screen_size), (0, 0))
         level.build_level(screen)
         char_list.draw(screen)
+        headsup.display(screen, message_current)
         pygame.display.flip()
         if walking == animation + 1:
             walking = 1
