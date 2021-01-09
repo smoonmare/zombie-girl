@@ -162,8 +162,12 @@ class HUD(object):
     def update_message(self, message):
         self.message = message
 
-    def display(self, display, message):
+    def display(self, display, message, help):
         font_title = pygame.font.Font(None, 24)
+        if help:
+            msg = font_title.render('Use A, D, [left-arrow], [right-arrow], [SPACE] to move', True, (255, 255, 255))
+            msg_rect = msg.get_rect(center=(int(screen_width / 2), screen_height))
+            display.blit(msg, msg_rect)
         lives = font_title.render('Lives: ' + str(self.lives), True, (255, 255, 255))
         lives_rect = lives.get_rect(center=(int(screen_width / 5), 15))
         display.blit(lives, lives_rect)
@@ -177,6 +181,8 @@ class HUD(object):
         display.blit(msg, msg_rect)
 
 def main():
+    help_action = False
+    help_time = 0
     walking = 1
     velocity = 0
     message_current = 'Avoid the girl and get to the exit!'
@@ -227,8 +233,15 @@ def main():
 
 
         for event in pygame.event.get():
+            if event.type == pygame.KEYDOWN:
+                needs_help = event.key != pygame.K_RIGHT and event.key != pygame.K_d and event.key != pygame.K_LEFT and event.key != pygame.K_a and event.key != pygame.K_SPACE
+                if needs_help:
+                    help_action = True
+                    help_time = pygame.time.get_ticks()
             if event.type == pygame.QUIT:
                 pygame.quit()
+            if help_action == True and help_time == 0 or pygame.time.get_ticks() - help_time >= 5000:
+                help_action = False
 
         if not level.platform_check(zombie.rect.x, zombie.rect.y) and not is_jumping:
             zombie.rect.x += 25
@@ -248,7 +261,7 @@ def main():
         screen.blit(pygame.transform.scale(background, screen_size), (0, 0))
         level.build_level(screen)
         char_list.draw(screen)
-        headsup.display(screen, message_current)
+        headsup.display(screen, message_current, help_action)
         pygame.display.flip()
         if walking == animation + 1:
             walking = 1
