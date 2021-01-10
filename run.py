@@ -55,6 +55,12 @@ class Zombie(Character):
         self.max_walk = 10
         self.jump_velocity = 15
 
+    def collide_check(self, tile_rects):
+        collision = self.rect.collidelist(tile_rects)
+        if collision >= 0:
+            return True
+        return False
+
     def jump(self, level_rects):
         mass = 3
         force = (int)(0.5 * mass) * self.jump_velocity^2
@@ -111,6 +117,8 @@ class Level(object):
             screen_height - 250: (screen_width - 700, screen_width - 450), \
                 screen_height - 300: (screen_width - 350, screen_width - 50)}
 
+    object_tiles = [[['Tombstone (1).png', screen_width - 1100, screen_height - 80]]]    
+
     def __init__(self,id):
         self.id = id
         path = 'png/Tiles/'
@@ -144,6 +152,18 @@ class Level(object):
             length = x2 - x1 + 50
             level_rects.append(pygame.Rect(x1, item[0], length, 50))
         return level_rects
+
+    def place_tile(self, surface):
+        for tile in self.object_tiles[self.id]:
+            image = pygame.transform.scale(pygame.image.load('png/Objects/' + tile[0]).convert_alpha(), (30, 30))
+            surface.blit(image, (tile[1], tile[2]))
+    
+    def get_tile_rect(self):
+        tile_rects = []
+        for tile in self.object_tiles[self.id]:
+            tile_rects.append(pygame.Rect(tile[1], tile[2], 30, 30))
+        return tile_rects
+
 
 class HUD(object):
 
@@ -180,6 +200,14 @@ class HUD(object):
         msg_rect = msg.get_rect(center=(int(screen_width / 2), 15))
         display.blit(msg, msg_rect)
 
+def red_screen_of_death(screen):
+    surface = pygame.Surface((screen_width, screen_height)).convert_alpha()
+    surface.fill((255, 0, 0, 75))
+    screen.blit(surface, (0, 0))
+    pygame.display.update()
+    pygame.time.delay(3000)
+    pygame.quit()
+
 def main():
     help_action = False
     help_time = 0
@@ -206,6 +234,7 @@ def main():
 
     #pick up the platform rects
     level_rects = level.get_rects()
+    tile_rects = level.get_tile_rect()
 
     while True:
         game_clock.tick(45)
@@ -214,6 +243,9 @@ def main():
         right_action = pressed_key[pygame.K_RIGHT] or pressed_key[pygame.K_d]
         left_action = pressed_key[pygame.K_LEFT] or pressed_key[pygame.K_a]
         jump_action = pressed_key[pygame.K_SPACE]
+
+        if zombie.collide_check(tile_rects) or zombie.collide_check([girl.rect]):
+            red_screen_of_death(screen)
 
         if right_action:
             if not is_jumping:
@@ -260,6 +292,7 @@ def main():
 
         screen.blit(pygame.transform.scale(background, screen_size), (0, 0))
         level.build_level(screen)
+        level.place_tile(screen)
         char_list.draw(screen)
         headsup.display(screen, message_current, help_action)
         pygame.display.flip()
