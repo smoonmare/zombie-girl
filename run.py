@@ -44,6 +44,26 @@ class Girl(Character):
         Character.__init__(self)
         self.rect.x = 0
         self.rect.y = 0
+        self.mode = 0
+        self.velocity = 1
+        self.frame = 1
+        self.max_walk = 20
+    
+    def deterministic_move(self, min_x, max_x):
+        if self.rect.x <= min_x or self.rect.x >= max_x:
+            self.velocity *= -1
+        self.walk(self.velocity, self.frame)
+        if self.frame == 4:
+            self.frame = 1
+        else:
+            self.frame += 1
+    
+    def proximity_check(self, zombie_x, zombie_y):
+        if zombie_y == self.rect.y:
+            if abs(zombie_x - self.rect.x) < 250:
+                return True
+        return False
+
 
 class Zombie(Character):
 
@@ -163,6 +183,10 @@ class Level(object):
         for tile in self.object_tiles[self.id]:
             tile_rects.append(pygame.Rect(tile[1], tile[2], 30, 30))
         return tile_rects
+    
+    # Pools X coordinates of the platform the girl is on
+    def get_platform_limits(self, y):
+        return self.limits[y + 50]
 
 
 class HUD(object):
@@ -213,6 +237,7 @@ def main():
     help_time = 0
     walking = 1
     velocity = 0
+    girl_frame = 1
     message_current = 'Avoid the girl and get to the exit!'
     game_clock= pygame.time.Clock()
     screen_size = (screen_width, screen_height)
@@ -290,14 +315,28 @@ def main():
         elif is_jumping:
             is_jumping = zombie.jump(level_rects)
 
+        if girl.proximity_check(zombie.rect.x, zombie.rect.y):
+            if girl.rect.x > zombie.rect.x:
+                girl.walk(-1, girl_frame)
+            else:
+                girl.walk(1, girl_frame)
+                girl_frame += 1
+        else:
+            (x, y) = level.get_platform_limits(girl.rect.y)
+            girl.deterministic_move(x, y)
+        
         screen.blit(pygame.transform.scale(background, screen_size), (0, 0))
         level.build_level(screen)
         level.place_tile(screen)
         char_list.draw(screen)
         headsup.display(screen, message_current, help_action)
         pygame.display.flip()
+
         if walking == animation + 1:
             walking = 1
+        
+        if girl_frame == animation + 1:
+            girl_frame = 1
 
 if __name__ == "__main__":
     main()
