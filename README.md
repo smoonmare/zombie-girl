@@ -1,6 +1,6 @@
-## The Zombie Girl
+## Zombie VS Girls
 
-#### Project Structure
+#### Project Structure:
 
 - Task 1: Setting the scene with a graphical background
 - Task 2: Adding tiles to the display
