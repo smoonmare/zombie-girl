@@ -1,7 +1,9 @@
-import pygame
 import os
+import pygame
+import random
 
 pygame.init()
+random.seed()
 
 screen_width = 1200
 screen_height = 750
@@ -48,8 +50,10 @@ class Girl(Character):
         self.velocity = 1
         self.frame = 1
         self.max_walk = 20
+        self.pause = 0
     
     def deterministic_move(self, min_x, max_x):
+        # Deterministic AI
         if self.rect.x <= min_x or self.rect.x >= max_x:
             self.velocity *= -1
         self.walk(self.velocity, self.frame)
@@ -63,6 +67,29 @@ class Girl(Character):
             if abs(zombie_x - self.rect.x) < 250:
                 return True
         return False
+    
+    def amble(self, min_x, max_x):
+        # Non-deterministic AI
+        if self.pause > 0:
+            if self.pause >=  50:
+                self.pause = 0
+            else:
+                self.pause += 1
+            return
+        
+        status = random.randint(1, 500)
+        direction = random.randint(1, 350)
+        if status == 1:
+            self.pause += 1
+            self.image = self.images['Idle (1).png']
+            return
+        if self.rect.x <= min_x or self.rect.x >= max_x or direction == 1:
+            self.velocity *= -1
+        self.walk(self.velocity, self.frame)
+        if self.frame == 4:
+            self.frame = 1
+        else:
+            self.frame += 1
 
 
 class Zombie(Character):
@@ -257,7 +284,7 @@ def main():
     girl.move(screen, glocation)
     zombie.move(screen, zlocation)
 
-    #pick up the platform rects
+    # Pick up the platform rects
     level_rects = level.get_rects()
     tile_rects = level.get_tile_rect()
 
@@ -323,7 +350,8 @@ def main():
                 girl_frame += 1
         else:
             (x, y) = level.get_platform_limits(girl.rect.y)
-            girl.deterministic_move(x, y)
+            # girl.deterministic_move(x, y) 
+            girl.amble(x, y)
         
         screen.blit(pygame.transform.scale(background, screen_size), (0, 0))
         level.build_level(screen)
